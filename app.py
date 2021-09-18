@@ -1,9 +1,17 @@
-import datetime
+# -*- coding: utf-8 -*-
+
+from datetime import date 
 from flask import Flask, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import NoResultFound
 from marshmallow import Schema, fields, ValidationError, pre_load
+from tde_r05 import gera_lista_branca
+from unidecode import unidecode
+
+from json import dumps
+from json import JSONEncoder
+
 
 
 #### Bootstrap ########################################
@@ -19,13 +27,38 @@ db = SQLAlchemy(app)
 class Paciente(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
-
+    num = db.Column(db.Integer)
+    sexo = db.Column(db.Integer)
+    data_consulta = db.Column(db.DateTime)
+    idade = db.Column(db.Integer)
+    local = db.Column(db.String(150))
+    hipertencao = db.Column(db.Integer)
+    diabetes = db.Column(db.Integer)
+    figado = db.Column(db.Integer)
+    rins = db.Column(db.Integer)
+    gravidez = db.Column(db.Integer)
+    alergias = db.Column(db.String(200))
+    reclamacao_do_paciente = db.Column(db.Text)
+    apos_diagnostico = db.Column(db.String(80))
 
 ##### SCHEMAS ##########################################
 
 class PacienteSchema(Schema):
     id = fields.Int(dump_only=True)
     name = fields.Str()
+    num = fields.Int()
+    sexo = fields.Int()
+    data_consulta = fields.Date()
+    idade = fields.Int()
+    local = fields.Str()
+    hipertencao = fields.Int()
+    diabetes = fields.Int()
+    figado = fields.Int()
+    rins = fields.Int()
+    gravidez = fields.Int()
+    alergias = fields.Str()
+    reclamacao_do_paciente = fields.Str()
+    apos_diagnostico = fields.Str()
 
     def format_name(self, paciente):
         return "{}".format(paciente.name)
@@ -108,24 +141,67 @@ def new_paciente():
         data = paciente_schema.load(json_data)
     except ValidationError as err:
         return err.messages, 422
+    alergias = data["alergias"]
+    data_consulta = data["data_consulta"]
+    diabetes = data["diabetes"]
+    figado = data["figado"]
+    gravidez = data["gravidez"]
+    hipertencao = data["hipertencao"]
+    idade = data["idade"]
+    local = data["local"]
     name = data["name"]
+    num = data["num"]
+    reclamacao_do_paciente = data["reclamacao_do_paciente"]
+    rins = data["rins"]
+    sexo = data["sexo"]
+
     paciente = Paciente.query.filter_by(name=name).first()
     if paciente is None:
         # Create a new paciente
-        paciente = Paciente(name=name)
+        paciente = Paciente(
+            name=name,alergias=alergias,data_consulta=data_consulta,diabetes=diabetes,
+            figado=figado,gravidez=gravidez,hipertencao=hipertencao,idade=idade,
+            local=local,num=num,reclamacao_do_paciente=reclamacao_do_paciente,rins=rins,sexo=sexo)
         db.session.add(paciente)
     db.session.commit()
     return {"message": "Created new Paciente."}
 
 
 ## API IA
-@app.route("/recomendacao1/", methods=["POST"])
-def recomendacao1:
-    pass
+@app.route("/recomendacao/", methods=["POST"])
+def recomendacao():
+    json_data = request.get_json()
+    print("-----------------------------------")
+    print(json_data['id'])
+    print()
+    print()
+    print()
+    print()
+    if not json_data:
+        return {"message":"No input data provided"}, 400
+    try:
+        paciente = Paciente.query.filter(Paciente.id == json_data['id']).one()
+    except NoResultFound:
+        return {"message":"Paciente could not bet found."}, 400
 
-def recomendacao2:
-    pass
+    dto = [
+        ['PatientId', 'num', 'sexo', 'data_consulta', 'idade', 'local', 'hipertencao', 'diabetes', 'figado', 'rins', 'gravidez', 'alergias', 'reclamação_do_paciente', 'apos_diagnostico'],
+        [paciente.id, paciente.num, paciente.sexo, '23/12/2021', paciente.idade, paciente.local, paciente.hipertencao, paciente.diabetes, paciente.figado, paciente.rins, paciente.gravidez, paciente.alergias,
+        paciente.reclamacao_do_paciente, json_data['diagnostico']],
+    ]
+    print()
+    print(dto)
+    print("----------------")
+    print(paciente.name)
+    print("------------------------------------------------------")
+    result = gera_lista_branca(dto)
+    return dumps(result, indent=4, cls=set_encoder,ensure_ascii=False)
 
+
+
+class set_encoder(JSONEncoder):
+    def default(self, obj):
+        return list(obj)
 
 
 
