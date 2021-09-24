@@ -11,14 +11,14 @@ from unidecode import unidecode
 
 from json import dumps
 from json import JSONEncoder
-
+import os
 
 
 #### Bootstrap ########################################
 
 app = Flask(__name__)
 CORS(app)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('BANCO')
 db = SQLAlchemy(app)
 
 
