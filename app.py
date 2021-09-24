@@ -18,7 +18,7 @@ from json import JSONEncoder
 
 app = Flask(__name__)
 CORS(app)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
 db = SQLAlchemy(app)
 
 
