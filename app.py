@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import NoResultFound
 from marshmallow import Schema, fields, ValidationError, pre_load
-from tde_r05 import gera_lista_branca
+from tde_r08 import gera_lista_branca
 from unidecode import unidecode
 
 from json import dumps
@@ -207,12 +207,6 @@ def new_paciente():
 @app.route("/recomendacao/", methods=["POST"])
 def recomendacao():
     json_data = request.get_json()
-    print("-----------------------------------")
-    print(json_data['id'])
-    print()
-    print()
-    print()
-    print()
     if not json_data:
         return {"message":"No input data provided"}, 400
     try:
@@ -220,10 +214,18 @@ def recomendacao():
     except NoResultFound:
         return {"message":"Paciente could not bet found."}, 400
 
+    if json_data.get('reclamacao_do_paciente'):
+        paciente.reclamacao_do_paciente = json_data['reclamacao_do_paciente']
+        db.session.add(paciente)
+        db.session.commit()
+
     dto = [
-        ['PatientId', 'num', 'sexo', 'data_consulta', 'idade', 'local', 'hipertencao', 'diabetes', 'figado', 'rins', 'gravidez', 'alergias', 'reclamação_do_paciente', 'apos_diagnostico', 'altura','peso'],
-        [paciente.id, paciente.num, paciente.sexo, '23/12/2021', paciente.idade, paciente.local, paciente.hipertencao, paciente.diabetes, paciente.figado, paciente.rins, paciente.gravidez, paciente.alergias,
-        paciente.reclamacao_do_paciente, json_data['diagnostico'],paciente.altura,paciente.peso],
+        ['PatientId', 'num', 'sexo', 'data_consulta', 'idade', 'local', 'hipertencao', 'diabetes', 'figado', 'rins', 'gravidez', 'alergias', 'reclamação_do_paciente', 'apos_diagnostico'],
+        [str(paciente.id),str(paciente.num),str(paciente.sexo), '23/12/2021',
+        str(paciente.idade), paciente.local,str(paciente.hipertencao),
+        str(paciente.diabetes),str(paciente.figado),str(paciente.rins),
+        str(paciente.gravidez), paciente.alergias,
+        paciente.reclamacao_do_paciente, json_data['diagnostico']],
     ]
     print()
     print(dto)
