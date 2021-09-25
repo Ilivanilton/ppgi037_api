@@ -40,6 +40,8 @@ class Paciente(db.Model):  # type: ignore
     alergias = db.Column(db.String(200))
     reclamacao_do_paciente = db.Column(db.Text)
     apos_diagnostico = db.Column(db.String(80))
+    altura = db.Column(db.Float)
+    peso = db.Column(db.Float)
 
 ##### SCHEMAS ##########################################
 
@@ -59,6 +61,8 @@ class PacienteSchema(Schema):
     alergias = fields.Str()
     reclamacao_do_paciente = fields.Str()
     apos_diagnostico = fields.Str()
+    altura = fields.Number()
+    peso = fields.Number()
 
     def format_name(self, paciente):
         return "{}".format(paciente.name)
@@ -111,6 +115,35 @@ def update_paciente(pk):
         return {"message": "Paciente could not be found."}, 400
     if data.get('name'):
         paciente.name = data['name']
+    if data.get('alergias'):
+        paciente.alergias = data['alergias']
+    if data.get('data_consulta'):
+        paciente.data_consulta = data['data_consulta']
+    if data.get('diabetes'):
+        paciente.diabetes = data['diabetes']
+    if data.get('figado'):
+        paciente.figado = data['figado']
+    if data.get('gravidez'):
+        paciente.gravidez = data['gravidez']
+    if data.get('hipertencao'):
+        paciente.hipertencao = data['hipertencao']
+    if data.get('idade'):
+        paciente.idade = data['idade']
+    if data.get('local'):
+        paciente.local = data['local']
+    if data.get('num'):
+        paciente.num = data['num']
+    if data.get('reclamacao_do_paciente'):
+        paciente.reclamacao_do_paciente = data['reclamacao_do_paciente']
+    if data.get('rins'):
+        paciente.rins = data['rins']
+    if data.get('sexo'):
+        paciente.sexo = data['sexo']
+    if data.get('altura'):
+        paciente.altura = data['altura']
+    if data.get('peso'):
+        paciente.peso = data['peso']
+
     db.session.add(paciente)
     db.session.commit()
     result = paciente_schema.dump(paciente)
@@ -154,6 +187,8 @@ def new_paciente():
     reclamacao_do_paciente = data["reclamacao_do_paciente"]
     rins = data["rins"]
     sexo = data["sexo"]
+    altura = data["altura"]
+    peso = data["peso"]
 
     paciente = Paciente.query.filter_by(name=name).first()
     if paciente is None:
@@ -161,7 +196,8 @@ def new_paciente():
         paciente = Paciente(
             name=name,alergias=alergias,data_consulta=data_consulta,diabetes=diabetes,
             figado=figado,gravidez=gravidez,hipertencao=hipertencao,idade=idade,
-            local=local,num=num,reclamacao_do_paciente=reclamacao_do_paciente,rins=rins,sexo=sexo)
+            local=local,num=num,reclamacao_do_paciente=reclamacao_do_paciente,rins=rins,
+            sexo=sexo,altura=altura,peso=peso)
         db.session.add(paciente)
     db.session.commit()
     return {"message": "Created new Paciente."}
@@ -185,9 +221,9 @@ def recomendacao():
         return {"message":"Paciente could not bet found."}, 400
 
     dto = [
-        ['PatientId', 'num', 'sexo', 'data_consulta', 'idade', 'local', 'hipertencao', 'diabetes', 'figado', 'rins', 'gravidez', 'alergias', 'reclamação_do_paciente', 'apos_diagnostico'],
+        ['PatientId', 'num', 'sexo', 'data_consulta', 'idade', 'local', 'hipertencao', 'diabetes', 'figado', 'rins', 'gravidez', 'alergias', 'reclamação_do_paciente', 'apos_diagnostico', 'altura','peso'],
         [paciente.id, paciente.num, paciente.sexo, '23/12/2021', paciente.idade, paciente.local, paciente.hipertencao, paciente.diabetes, paciente.figado, paciente.rins, paciente.gravidez, paciente.alergias,
-        paciente.reclamacao_do_paciente, json_data['diagnostico']],
+        paciente.reclamacao_do_paciente, json_data['diagnostico'],paciente.altura,paciente.peso],
     ]
     print()
     print(dto)
